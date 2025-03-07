@@ -4,6 +4,9 @@
 clear;
 directory='/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data/angular_vel_data';
 folder= ["2022_02_09_13_40_13", "2022_06_24_11_41_06", "2022_06_24_11_49_03", "2022_06_24_14_26_28", "2022_09_15_15_25_58", "2022_09_19_11_27_04", "2022_10_06_15_51_11"];
+HeadCal_Time_title = {'Session_ID' 'Angular Velocity ID' 'MaxFFT start time' 'MaxFFT end time' 'First Shake Start Time' 'First Shake End Time'};
+Timestamp_save = 'First_HeadCal_time_FFTm.xlsx';  
+writecell(HeadCal_Time_title,Timestamp_save);
 
 for i = 1:7
     folder_name = folder(i);
@@ -24,8 +27,8 @@ for i = 1:7
         Fs=floor(acceptable_index/Time(acceptable_index)); 
 
         %% FFT for angular velocity 
-        z=zeros([6*Fs 1]); %6s window
-        window_size = 6; %in seconds
+        z=zeros([5*Fs 1]); %5s window
+        window_size = 5; %in seconds
         sliding_width= 1; %in seconds
         counter=floor(((length(ang_vel) -(window_size*Fs))/(sliding_width*Fs)))+1;
         dataset_complex_magnitude =[];
@@ -44,7 +47,7 @@ for i = 1:7
             samp_rate = Fs;    
             freqx = 0:samp_rate/L:(samp_rate-samp_rate/L);            
             window_fft = fft(z);
-        %% single sided FFT, amplitude of the real value
+            %single sided FFT, amplitude of the real value
             P2 = abs(window_fft/L);
             P1 = P2(1:L/2+1);
             P1(2:end-1) = 2*P1(2:end-1);
@@ -79,13 +82,10 @@ for i = 1:7
     number_shake_present=length(shake_window_start_time);
     shake_window_end_time = Time(shake_x_end);
     
-    HeadCal_Time_title = {folder_name n "Max Start Time" max_window_start_time "First Shake Start Time" shake_window_start_time(1) 
-                          folder_name n "Max End Time" max_window_end_time "First Shake End Time" shake_window_end_time(1)};
-    
-    
-    Timestamp_save = 'First_HeadCal_time_m.xlsx';
-    writecell(HeadCal_Time_title,Timestamp_save, 'WriteMode','append')
+    HeadCal_Time = [folder_name, n, num2str(max_window_start_time), num2str(max_window_end_time), num2str(shake_window_start_time(1)), num2str(shake_window_end_time(1))];
+    writematrix(HeadCal_Time,Timestamp_save, 'WriteMode','append')
     end
-%plot(Time(1:acceptable_index), ang_vel(1:acceptable_index))
-end
 
+end
+%plot(Time(1:acceptable_index), ang_vel(1:acceptable_index))
+    
