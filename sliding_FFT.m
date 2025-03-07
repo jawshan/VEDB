@@ -1,4 +1,7 @@
+% Author: Jawshan Ara Shatil
+%Date finalized: 03.06.2025
 
+clear;
 directory='/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data/angular_vel_data';
 folder= ["2022_02_09_13_40_13", "2022_06_24_11_41_06", "2022_06_24_11_49_03", "2022_06_24_14_26_28", "2022_09_15_15_25_58", "2022_09_19_11_27_04", "2022_10_06_15_51_11"];
 
@@ -15,9 +18,9 @@ for i = 1:7
         ang_vel=table2array(ang_vel);
         ang_vel=ang_vel(2:end);
         
-        acceptable_index = length(ang_vel);
+        acceptable_index = min(length(Time),length(ang_vel));
         
-        %sampling frequency
+        %% sampling frequency
         Fs=floor(acceptable_index/Time(acceptable_index)); 
 
         %% FFT for angular velocity 
@@ -55,7 +58,7 @@ for i = 1:7
    
     max_absFFT_dataset=max(dataset_absFFT);
     max_All = max(dataset_absFFT,[],"all");
-    acceptable_absFFT=(max_All*3)/4;
+    acceptable_absFFT=(max_All*2)/3;
     
     [i_row_shake,i_col_shake] =find(max_absFFT_dataset> acceptable_absFFT);
     [i_row_max,i_col_max] =find(max_absFFT_dataset == max_All);
@@ -80,7 +83,7 @@ for i = 1:7
                           folder_name n "Max End Time" max_window_end_time "First Shake End Time" shake_window_end_time(1)};
     
     
-    Timestamp_save = 'HeadCal_time.xlsx';
+    Timestamp_save = 'First_HeadCal_time_m.xlsx';
     writecell(HeadCal_Time_title,Timestamp_save, 'WriteMode','append')
     end
 %plot(Time(1:acceptable_index), ang_vel(1:acceptable_index))
