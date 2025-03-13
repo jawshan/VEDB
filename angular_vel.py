@@ -1,7 +1,6 @@
 import sys
 from ast import parse
 import numpy as np
-
 import msgpack
 
 #The two graphing packages
@@ -12,6 +11,15 @@ import pandas as pd
 import os
 from io import BytesIO
 from pathlib import Path
+
+#import matplotlib.pyplot as plt
+#import os
+#import pandas as pd
+#import numpy as np
+import scipy.signal as signal
+from scipy.fft import fft
+from scipy.signal.windows import hann
+import openpyxl
 
 ## folder path setting
 current_directory = os.getcwd()
@@ -115,34 +123,34 @@ def generate_graphs(filename_list: list[str]):
         df_ang_vel0 = pd.DataFrame(angular_velocity_0_list)
         df_ang_vel1 = pd.DataFrame(angular_velocity_1_list)
 
-        # # Save DataFrame to Excel file
-        current_directory = os.getcwd()
-        ## change directory
-        new_directory = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data/angular_vel_data"  # Replace with the actual path
-        os.chdir(new_directory)
-        #timestamp
-        time_xlfilename= folder_name + '_'+'timestamp.xlsx'
-        filepath = os.path.join(current_directory, time_xlfilename)
-        df_timestamp.to_excel(time_xlfilename, index=False)
-        #angular velocity0
-        ang0_xlfilename=folder_name + '_'+'ang_vel_0.xlsx'
-        filepath = os.path.join(current_directory, ang0_xlfilename)
-        df_ang_vel0.to_excel(ang0_xlfilename, index=False)
-        #angular velocity1
-        ang1_xlfilename=folder_name + '_'+'ang_vel_1.xlsx'
-        filepath = os.path.join(current_directory, ang1_xlfilename)
-        df_ang_vel1.to_excel(ang1_xlfilename, index=False)
+        # # # Save DataFrame to Excel file
+        # current_directory = os.getcwd()
+        # ## change directory
+        # new_directory = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data/angular_vel_data"  # Replace with the actual path
+        # os.chdir(new_directory)
+        # #timestamp
+        # time_xlfilename= folder_name + '_'+'timestamp.xlsx'
+        # filepath = os.path.join(current_directory, time_xlfilename)
+        # df_timestamp.to_excel(time_xlfilename, index=False)
+        # #angular velocity0
+        # ang0_xlfilename=folder_name + '_'+'ang_vel_0.xlsx'
+        # filepath = os.path.join(current_directory, ang0_xlfilename)
+        # df_ang_vel0.to_excel(ang0_xlfilename, index=False)
+        # #angular velocity1
+        # ang1_xlfilename=folder_name + '_'+'ang_vel_1.xlsx'
+        # filepath = os.path.join(current_directory, ang1_xlfilename)
+        # df_ang_vel1.to_excel(ang1_xlfilename, index=False)
         
 
-        #Matplotlib Plots: Static image plots
-        # plt.clf()
-        # plt.plot(timestamp_list, angular_velocity_0_list, label=data_type_4)
-        # plt.plot(timestamp_list, angular_velocity_1_list, label=data_type_5)
-        # plt.plot(timestamp_list, angular_velocity_2_list, label=data_type_6)
-        # # Set the x-axis range
-        # plt.xlim(0, 200)
-        # plt.legend()
-        # plt.show()
+        ##Matplotlib Plots: Static image plots
+        plt.clf()
+        plt.plot(timestamp_list, angular_velocity_0_list, label=data_type_4)
+        plt.plot(timestamp_list, angular_velocity_1_list, label=data_type_5)
+        #plt.plot(timestamp_list, angular_velocity_2_list, label=data_type_6)
+        # Set the x-axis range
+        #plt.xlim(0, 200)
+        plt.legend()
+        plt.show()
 
         # #Plotly Plots: Angular velocity, Dynamic interactable plots
         # fig = go.Figure()

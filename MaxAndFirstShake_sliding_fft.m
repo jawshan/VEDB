@@ -27,7 +27,7 @@ for i = 1:7
         Fs=floor(acceptable_index/Time(acceptable_index)); 
 
         %% FFT for angular velocity 
-        z=zeros([5*Fs 1]); %5s window
+        segment=zeros([5*Fs 1]); %5s window
         window_size = 5; %in seconds
         sliding_width= 1; %in seconds
         counter=floor(((length(ang_vel) -(window_size*Fs))/(sliding_width*Fs)))+1;
@@ -41,12 +41,12 @@ for i = 1:7
                     x_end = length(ang_vel);
                 end
         %% windowing the signal
-            z=ang_vel(x_start:x_end);
-            x = 0:length(z)-1; 
+            segment=ang_vel(x_start:x_end);
+            x = 0:length(segment)-1; 
             L = length(x);     
             samp_rate = Fs;    
             freqx = 0:samp_rate/L:(samp_rate-samp_rate/L);            
-            window_fft = fft(z);
+            window_fft = fft(segment);
             %single sided FFT, amplitude of the real value
             P2 = abs(window_fft/L);
             P1 = P2(1:L/2+1);

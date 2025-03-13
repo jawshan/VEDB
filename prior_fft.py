@@ -9,9 +9,9 @@ import scipy.signal as signal
 import openpyxl
 
 directory = '/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data/angular_vel_data'
-session_id = ["2022_02_09_13_40_13", "2022_06_24_11_41_06", "2022_06_24_11_49_03", "2022_06_24_14_26_28", "2022_09_15_15_25_58", "2022_09_19_11_27_04", "2022_10_06_15_51_11"]
-velocity_id = [0 , 1]
-#session_id = ["2022_02_09_13_40_13"]
+#session_id = ["2022_02_09_13_40_13", "2022_06_24_11_41_06", "2022_06_24_11_49_03", "2022_06_24_14_26_28", "2022_09_15_15_25_58", "2022_09_19_11_27_04", "2022_10_06_15_51_11"]
+velocity_id = [0]# , 1]
+session_id = ["2022_06_24_11_41_06","2022_10_06_15_51_11"]
 for i in range(len(session_id)):
     folder_name = session_id[i]
     for n in range(len(velocity_id)):
@@ -19,10 +19,7 @@ for i in range(len(session_id)):
         print(N)
         filename = os.path.join(directory, f"{folder_name}_ang_vel_{N}.xlsx")
         filenameT = os.path.join(directory, f"{folder_name}_timestamp.xlsx")
-        # if not os.path.exists(filename) or not os.path.exists(filenameT):
-        #     print(f"Warning: File(s) not found for session {folder_name}, velocity {N}. Skipping.")
-        #     continue
-
+        
         timestamp = pd.read_excel(filenameT)
         Time = timestamp.values[1:].flatten()
         ang_vel = pd.read_excel(filename)
@@ -64,22 +61,26 @@ for i in range(len(session_id)):
         print(acceptable_absFFT)
 
         i_col_max = np.where(max_absFFT_dataset == max_All)
-        maxFFT_index=int(i_col_max[0])
-
-        max_x_start = maxFFT_index *sliding_width
+        maxFFT_index=int(i_col_max[0]*Fs)
+        #print(maxFFT_index)
+        max_x_start = Time[maxFFT_index]
+        #print(max_x_start)
         max_x_end = max_x_start + window_size
-
-        print(max_x_start)
-        print(max_x_end)
+        #print(max_x_end)
 
         i_col_shake = np.where(max_absFFT_dataset > acceptable_absFFT)[0]
-        first_shake_FFT_index=int(i_col_shake[0])
-
-        first_shake_start = first_shake_FFT_index *sliding_width
+        first_shake_FFT_index=int(i_col_shake[0]*Fs)
+        first_shake_start = Time[first_shake_FFT_index]
         first_shake_end = first_shake_start + window_size
+        
+        # Headshake_FFT_index=int(i_col_shake*Fs)
+        # Headshake_start = Time[first_shake_FFT_index]
+        # print(Headshake_start)
+        # Headshake_end = first_shake_start + window_size
 
-        print(first_shake_start)
-        print(first_shake_end)
+
+        # print(first_shake_start)
+        # print(first_shake_end)
         
         HeadCal_Time_title = ['Session_ID', 'Angular Velocity ID', 'MaxFFT start time', 'MaxFFT end time', 'First Shake Start Time', 'First Shake End Time']
         Timestamp_save = 'First_HeadCal_time_FFTpy.xlsx'
