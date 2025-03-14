@@ -1,5 +1,5 @@
 #Author: Jawshan Ara Shatil
-#Date: 03.07.2025
+#Date: 03.14.2025
 
 import sys
 from ast import parse
@@ -19,31 +19,13 @@ import os
 from io import BytesIO
 from pathlib import Path
 
-## folder path setting
-current_directory = os.getcwd()
-## change directory
-new_directory = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data"  # Replace with the actual path
-os.chdir(new_directory)
-user_input = input("Enter Folder name: ")       
-session_id = user_input
-file_name= "eye0.pldata"
-folder_path = Path.cwd() / session_id
+def loop_through_files(directory, session_name):
+    current_directory = os.getcwd()      
+    session_id = session_name
+    os.chdir(directory + "/" + session_id)
+    print(f"Current working directory: {os.getcwd()}")
+    parent_folder = {os.getcwd()}
 
-new_directory = folder_path
-try:
-    os.chdir(new_directory)
-    print(f"Current working directory after change: {os.getcwd()}")
-except FileNotFoundError:
-    print(f"Error: Directory not found: {new_directory}")
-except NotADirectoryError:
-    print(f"Error: Not a directory: {new_directory}")
-except PermissionError:
-    print(f"Error: Permission denied: {new_directory}")
-except Exception as e:
-    print(f"An error occurred: {e}")
-
-## file path setting    
-file_path=folder_path/file_name
 
 #Opens the file, extracts the data
 def read_pldata(file_path):
@@ -75,27 +57,12 @@ def parse_pldata(data):
 
     return flattened
 
-def FFT_function(data, x_start, x_end, Fs):
-    segment = data[x_start:x_end]
-    x = np.arange(len(segment))
-    L = len(x)
-    samp_rate = Fs
-
-    window_fft = np.fft.fft(segment)
-    # Single-sided FFT, amplitude of the real value
-    P2 = np.abs(window_fft / L)
-    P1 = P2[:L // 2 + 1]
-    P1[1:-1] = 2 * P1[1:-1]
-
-    absFFT = P1
-    return absFFT
 
 # Generates static graphs for display in the visualizer
-def generate_graphs(filename_list: list[str]):
+def generate_slidingFFT(filename_list: list[str], session_name):
     # assuming either 1. both files exist, 2. neither file exists
     global graph_file_list
     for filename in filename_list:
-        print(filename)
         data = read_pldata(filename)
         df = pd.DataFrame(data)
         
@@ -131,28 +98,26 @@ def generate_graphs(filename_list: list[str]):
         #print(len(ang_vel1))
         
         velocity_id=[0,1]
-        #session_id = ["2022_10_06_15_51_11"]
+        session_id = session_name
         for n in range(len(velocity_id)):
             N = str(n)
             ang_filename = f"{session_id}_ang_vel_{N}"
             print(ang_filename)
             if n==0:
                 ang_vel = ang_vel0
-                print(len(ang_vel))
+                
             else:
                 ang_vel = ang_vel1
-                print(len(ang_vel))
             
-
             acceptable_index = min(len(Time), len(ang_vel))
-            #print(acceptable_index)
+            
             Time = Time[0:acceptable_index]
             ang_vel = ang_vel[0:acceptable_index]
 
             if acceptable_index > 0 and len(Time) > 1:
                 Time = np.array(Time)
                 Fs = np.floor(acceptable_index / Time[acceptable_index - 1]).astype(int)
-                print(Fs)
+                
             else:
                 print(f"Warning: Insufficient data for session {session_id}, velocity {N}. Skipping.")
                 continue
@@ -176,21 +141,21 @@ def generate_graphs(filename_list: list[str]):
             dataset_absFFT = np.array(dataset_absFFT)
             max_absFFT_dataset = np.max(dataset_absFFT, axis=1)
             max_All = np.max(max_absFFT_dataset)
-            print(max_All)
+            #print(max_All)
             acceptable_absFFT = (max_All * 2) / 3
-            print(acceptable_absFFT)
+            #print(acceptable_absFFT)
 
             i_col_max = np.where(max_absFFT_dataset == max_All)
             maxFFT_index=int(i_col_max[0]*Fs)
             #print(maxFFT_index)
             max_x_start = Time[maxFFT_index]
-            print(max_x_start)
+            #print(max_x_start)
             max_x_end = max_x_start + window_size
 
             i_col_shake = np.where(max_absFFT_dataset > acceptable_absFFT)[0]
             first_shake_FFT_index=int(i_col_shake[0]*Fs)
             first_shake_start = Time[first_shake_FFT_index]
-            print(first_shake_start)
+            #print(first_shake_start)
             first_shake_end = first_shake_start + window_size
             
             # Headshake_FFT_index=int(i_col_shake*Fs)
@@ -202,22 +167,15 @@ def generate_graphs(filename_list: list[str]):
             
             new_directory = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/VEDB"  # Replace with the actual path
             os.chdir(new_directory)
-            #user_input = input("Enter Folder name: ")       
-            #session_id = user_input
-            #file_name= "eye0.pldata"
             folder_path = Path.cwd()
-
             new_directory = folder_path
-
-            
-            
             Timestamp_save = 'Max_HeadCal_time_FFTpy.xlsx'
             #HeadCal_Time_title = ['Session_ID', 'Angular Velocity ID', 'MaxFFT start time', 'MaxFFT end time', 'First Shake Start Time', 'First Shake End Time']
-            HeadCal_Time_title = ['Session_ID', 'Angular Velocity ID', 'MaxFFT start time','MaxFFT']#, 'MaxFFT end time', 'First Shake Start Time', 'First Shake End Time']
+            HeadCal_Time_title = ['Session_ID', 'Angular Velocity ID', 'MaxFFT start time','MaxFFT end time','MaxFFT'] #, 'First Shake Start Time', 'First Shake End Time']
             
             results_df = pd.DataFrame(columns=HeadCal_Time_title)
             #HeadCal_Time = pd.DataFrame({'Session_ID': [session_id], 'Angular Velocity ID': [velocity_id[n]], 'MaxFFT start time': [max_x_start], 'MaxFFT end time': [max_x_end], 'First Shake Start Time': [first_shake_start], 'First Shake End Time': [first_shake_end]})
-            HeadCal_Time = pd.DataFrame({'Session_ID': [session_id], 'Angular Velocity ID': [velocity_id[n]], 'MaxFFT start time': [max_x_start], 'MaxFFT': [max_All]})#, 'MaxFFT end time': [max_x_end], 'First Shake Start Time': [first_shake_start], 'First Shake End Time': [first_shake_end]})
+            HeadCal_Time = pd.DataFrame({'Session_ID': [session_id], 'Angular Velocity ID': [velocity_id[n]], 'MaxFFT start time': [max_x_start], 'MaxFFT end time': [max_x_end],'MaxFFT': [max_All]})#, 'First Shake Start Time': [first_shake_start], 'First Shake End Time': [first_shake_end]})
             
             results_df = pd.concat([results_df, HeadCal_Time], ignore_index=True)
 
@@ -238,26 +196,16 @@ def generate_graphs(filename_list: list[str]):
         
         
 def main():
-    filelist = ['eye0.pldata', 'eye1.pldata', 'odometry.pldata']
-    for file in filelist:
-        if not os.path.exists(file):
-            filelist.remove(file)
-
-    data0 = read_pldata('eye0.pldata')
-    data1 = read_pldata('eye1.pldata')
-    dataod = read_pldata('odometry.pldata')
-
-    df0 = pd.DataFrame(data0)
-    df1= pd.DataFrame(data1)
-    dfod = pd.DataFrame(dataod)
-
-
-    filelist.clear()
-    arr = df0[1].iloc[2]
-    np.set_printoptions(threshold=sys.maxsize)
-    #print(arr)
-    filelist = ['odometry.pldata']
-    generate_graphs(filelist)
+    parent_folder_path = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data"
+    session_ids = [item for item in os.listdir(parent_folder_path) if os.path.isdir(os.path.join(parent_folder_path, item))]
+    print("Folders in directory:", session_ids)
+    for i in range(len(session_ids)):
+        session_name= session_ids[i]
+        loop_through_files(parent_folder_path, session_name)
+        current_directory = {os.getcwd()}
+        dataod = read_pldata('odometry.pldata')
+        dfod = pd.DataFrame(dataod)
+        generate_slidingFFT(['odometry.pldata'], session_name)
     
 
 main()
