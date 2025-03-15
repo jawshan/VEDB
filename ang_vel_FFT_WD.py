@@ -18,13 +18,23 @@ import pandas as pd
 import os
 from io import BytesIO
 from pathlib import Path
+import warnings
+
+# Ignore all warnings
+warnings.filterwarnings('ignore')
 
 def loop_through_files(directory, session_name):
     current_directory = os.getcwd()      
     session_id = session_name
     os.chdir(directory + "/" + session_id)
-    print(f"Current working directory: {os.getcwd()}")
+    #print(f"Current working directory: {os.getcwd()}")
     parent_folder = {os.getcwd()}
+
+    try:
+        print(f"Current working directory: {os.getcwd()}")
+    except FileNotFoundError:
+        print(f"Error: Directory not found: {parent_folder}")
+        #pass
 
 
 #Opens the file, extracts the data
@@ -37,8 +47,10 @@ def read_pldata(file_path):
                 data.append(packet)
     except OSError:
         print(f'File path: "{file_path}" not found.')
-        print(f"Current working directory: {os.getcwd()}")
-        raise OSError
+        data = []
+        #print(f"Current working directory: {os.getcwd()}")
+        #raise OSError
+        pass
     return data
 
 ## Flattens the data, makes it readable, output is column sorted
@@ -58,13 +70,16 @@ def parse_pldata(data):
     return flattened
 
 
-# Generates static graphs for display in the visualizer
 def generate_slidingFFT(filename_list: list[str], session_name):
     # assuming either 1. both files exist, 2. neither file exists
     global graph_file_list
     for filename in filename_list:
         data = read_pldata(filename)
         df = pd.DataFrame(data)
+        # if df.empty:
+        #     pass  # DataFrame is empty, skip the block
+        # #print(df.head()) 
+        #print(df.columns)
         
         angular_velocity_0_list = []
         angular_velocity_1_list = []
@@ -145,18 +160,33 @@ def generate_slidingFFT(filename_list: list[str], session_name):
             acceptable_absFFT = (max_All * 2) / 3
             #print(acceptable_absFFT)
 
+            
             i_col_max = np.where(max_absFFT_dataset == max_All)
+            maxFFT_index=i_col_max[0]*Fs
+            # if len(maxFFT_index)==0:
+            #     max_x_start=-1
+            # else:
+            #     max_x_start = Time[int(maxFFT_index)]
+        
+            # maxFFT_end_index=(i_col_max[0]*Fs)+window_size*Fs
+            # if len(maxFFT_end_index)==0:
+            #     max_x_end =-1
+            # else:
+            #     max_x_end = Time[int(maxFFT_end_index)]
+            
             maxFFT_index=int(i_col_max[0]*Fs)
+            maxFFT_end_index=int((i_col_max[0]*Fs)+(window_size*Fs))
             #print(maxFFT_index)
             max_x_start = Time[maxFFT_index]
+            max_x_end = Time[maxFFT_end_index]
             #print(max_x_start)
-            max_x_end = max_x_start + window_size
+            
 
-            i_col_shake = np.where(max_absFFT_dataset > acceptable_absFFT)[0]
-            first_shake_FFT_index=int(i_col_shake[0]*Fs)
-            first_shake_start = Time[first_shake_FFT_index]
-            #print(first_shake_start)
-            first_shake_end = first_shake_start + window_size
+            # i_col_shake = np.where(max_absFFT_dataset > acceptable_absFFT)[0]
+            # first_shake_FFT_index=int(i_col_shake[0]*Fs)
+            # first_shake_start = Time[first_shake_FFT_index]
+            # #print(first_shake_start)
+            # first_shake_end = first_shake_start + window_size
             
             # Headshake_FFT_index=int(i_col_shake*Fs)
             # Headshake_start = Time[first_shake_FFT_index]
@@ -196,16 +226,23 @@ def generate_slidingFFT(filename_list: list[str], session_name):
         
         
 def main():
-    parent_folder_path = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data"
+    #parent_folder_path = "/Users/shatil/Library/CloudStorage/Box-Box/VEDB_IN/Good_data"
+    parent_folder_path = "/Volumes/vedbunr/vedb_official"
+    
     session_ids = [item for item in os.listdir(parent_folder_path) if os.path.isdir(os.path.join(parent_folder_path, item))]
-    print("Folders in directory:", session_ids)
+    #session_ids = ['2022_07_07_15_58_13', '2022_07_06_13_15_33', '2021_02_19_13_53_29', '2021_10_24_13_46_50']
+    #print("Folders in directory:", session_ids)
     for i in range(len(session_ids)):
-        session_name= session_ids[i]
-        loop_through_files(parent_folder_path, session_name)
-        current_directory = {os.getcwd()}
-        dataod = read_pldata('odometry.pldata')
-        dfod = pd.DataFrame(dataod)
-        generate_slidingFFT(['odometry.pldata'], session_name)
+        try:
+            session_name= session_ids[i]
+            loop_through_files(parent_folder_path, session_name)
+            current_directory = {os.getcwd()}
+            dataod = read_pldata('odometry.pldata')
+            dfod = pd.DataFrame(dataod)
+            generate_slidingFFT(['odometry.pldata'], session_name)
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}. Skipping item: {i}")
+            continue
     
 
 main()
