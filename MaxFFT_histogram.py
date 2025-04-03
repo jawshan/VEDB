@@ -11,10 +11,10 @@ data = pd.read_excel("Max_HeadCal_time_FFTpy.xlsx", usecols=['MaxFFT'])
 plt.hist(data, bins=35, color='skyblue', edgecolor='black')
 
 # Customize the plot (optional)
-plt.title('Histogram of Data')
-plt.xlabel('Value')
+#plt.title('Histogram of Data')
+plt.xlabel('Max FFT Amplitude')
 plt.ylabel('Frequency')
-plt.grid(axis='y', alpha=0.75)
+plt.grid(axis='y', alpha=0.5)
 
 # Show the plot
 plt.show()
