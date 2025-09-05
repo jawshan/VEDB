@@ -56,8 +56,8 @@ def generate_slidingFFT(session_path, session_id, velocity_id):
     generated_fft_files = [] # To store paths of generated FFT files
 
     # Filter design parameters (can be made configurable if needed, suggested by Pogen)
-    lowcut = 0.25
-    highcut = 1
+    lowcut = 0.5
+    highcut = 2
 
     # Plotting setup for individual velocity FFTs
     fig, axes = plt.subplots(1, len(velocity_id), figsize=(15, 5), sharey=True)
