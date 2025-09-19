@@ -56,8 +56,8 @@ def generate_slidingFFT(session_path, session_id, velocity_id):
     generated_fft_files = [] # To store paths of generated FFT files
 
     # Filter design parameters (can be made configurable if needed, suggested by Pogen)
-    lowcut = 0.5
-    highcut = 2
+    lowcut = 0.25
+    highcut = 1.5
 
     # Plotting setup for individual velocity FFTs
     fig, axes = plt.subplots(1, len(velocity_id), figsize=(15, 5), sharey=True)
@@ -279,7 +279,8 @@ def find_maxFFT(summed_fft_filename, window_size_sec, Fs, session_name, session_
         return
 
     # Extract time and angular velocity for the max FFT window
-    maxFFT_Time_segment = Time[maxFFT_start_index:(maxFFT_start_index+ (35*120))]
+    maxFFT_Time_segment = Time[maxFFT_start_index:(maxFFT_start_index + (35*120))]
+    print(len(maxFFT_Time_segment))
     maxFFT_angV0_segment = ang_vel0[maxFFT_start_index:(maxFFT_start_index+ (35*120))]
     maxFFT_angV1_segment = ang_vel1[maxFFT_start_index:(maxFFT_start_index+ (35*120))]
     maxFFT_angV2_segment = ang_vel2[maxFFT_start_index:(maxFFT_start_index+ (35*120))]
